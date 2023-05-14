@@ -1,0 +1,668 @@
+--autofarm
+getgenv().autofarmtest = false
+getgenv().autofarmgems = false
+getgenv().autofarmgemsall = false
+
+--Hatching
+getgenv().autohatch1 = false
+getgenv().autohatch3 = false
+getgenv().autorankup = false
+getgenv().autocraftall = false
+getgenv().autoequipbest = false
+--Upgrades
+getgenv().upgrade1 = false
+getgenv().upgrade3 = false
+getgenv().upgrade5 = false
+getgenv().upgrade6 = false
+getgenv().upgrade7 = false
+--misc
+getgenv().autoclaimchest = false
+getgenv().autoclaimgchest = false
+getgenv().autoclaimach = false
+
+local library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall%20v3')))()
+
+local selectedworld 
+local Areas = workspace.PortalReceivers:GetChildren()
+local AreasTable = {}
+for i,v in pairs(Areas)do
+    table.insert(AreasTable, v.Name)
+end
+
+local selectedfarmarea
+local FarmAreas = workspace.SpawnZones:GetChildren()
+local FarmAreasTable = {}
+for i,v in pairs(FarmAreas) do
+    table.insert(FarmAreasTable, v.Name)
+end
+
+local selectedegg1
+local selectedegg2
+local Eggs = workspace.Eggs:GetChildren()
+local EggTable = {}
+for i,v in pairs(Eggs) do
+    table.insert(EggTable, v.Name)
+end
+
+local Craft = game:GetService("Players").LocalPlayer.Pets:GetChildren()
+local CraftTable = {}
+for i,v in pairs (Craft) do
+    table.insert(CraftTable, v.Name)
+end
+
+
+
+
+local Players = game:GetService("Players")
+local tween_s = game:GetService('TweenService')
+local tween_info = TweenInfo.new(0.1, Enum.EasingStyle.Linear)
+
+local lp = Players.LocalPlayer
+
+
+function bypass_tp(v)
+    if lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') then
+        local cf = CFrame.new(v)
+        local a = tween_s:Create(lp.Character.HumanoidRootPart, tween_info, {CFrame = cf})
+        a:Play()
+    end
+end
+
+function getcurrentPlayerPOS()
+    local plyr = game.Players.LocalPlayer
+    if plyr.Character then
+        return plyr.Character.HumanoidRootPart
+    end
+    return false
+end
+
+function teleporto(placeCframe)
+    local plyr = game.Players.LocalPlayer
+    if plyr.Character then
+        plyr.Character.HumanoidRootPart.CFrame = placeCframe
+    end
+end
+
+function teleportworld(world)
+    if workspace.PortalReceivers:FindFirstChild(world) then
+        bypass_tp(workspace.PortalReceivers[world].CFrame.Position)
+    end
+end
+
+local function autofarmTest(world)
+    spawn(function()
+        while getgenv().autofarmtest == true do
+            local args = {
+                [1] = world
+            }
+            
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Teleport"):InvokeServer(unpack(args))
+            
+        while getgenv().autofarmtest == true do
+            local spawns = workspace.SpawnZones[selectedfarmarea]:GetChildren()
+            for _, spawn in ipairs(spawns) do
+                if spawn:FindFirstChild("MainPart") then
+                    bypass_tp(spawn.MainPart.CFrame.Position)
+                    wait(0.3)
+                    if getgenv().autofarmtest == false then
+                        break
+                    end
+                    end
+                end
+            end
+        end
+    end)
+end
+local function autofarmGems(world)
+    spawn(function()
+        while getgenv().autofarmgems == true do
+            local args = {
+                [1] = world
+            }
+            
+            game:GetService("ReplicatedStorage")
+                :WaitForChild("Remotes")
+                :WaitForChild("Teleport")
+                :InvokeServer(unpack(args))
+            
+            -- Search for Gem parts in Spawn Zone
+            local gemFound = false
+            repeat
+                for _, child in ipairs(workspace.SpawnZones[selectedfarmarea]:GetChildren()) do
+                    if child.Name == "Gem" then
+                        bypass_tp(child.MainPart.CFrame.Position)
+                        wait(0.3)
+                        gemFound = true
+                    end
+                end
+                if not gemFound then
+                    wait(1)
+                end
+            until gemFound == true or getgenv().autofarmgems == false
+        end
+    end)
+end
+
+local function autofarmGemsAll()
+    spawn(function()
+        local worlds = {
+            "Spawn",
+            "Forest",
+            "Frosty",
+            "Mine",
+            "Aqua"
+        }
+        
+        while getgenv().autofarmgemsall == true do
+            local gemFound = false
+            
+            for _, world in ipairs(worlds) do
+                local args = {[1] = world}
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("Remotes")
+                    :WaitForChild("Teleport")
+                    :InvokeServer(unpack(args))
+            
+                repeat
+                    local gemFound = false
+                    
+                    for _, child in ipairs(workspace.SpawnZones[world]:GetChildren()) do
+                        if child.Name == "Gem" then
+                            bypass_tp(child.MainPart.CFrame.Position)
+                            wait(2) -- added a 2 second delay before teleporting to the gem
+                            gemFound = true
+                        end
+                    end
+                    
+                    if not gemFound then
+                        wait(1)
+                        timeElapsed = timeElapsed + 1
+                        if timeElapsed >= 1 then -- change world if no gems found for 1 or more seconds
+                            break
+                        end
+                    else
+                        timeElapsed = 0 -- reset timer if gem is found
+                    end
+                until gemFound == true or getgenv().autofarmgemsall == false
+                
+                if not gemFound and getgenv().autofarmgemsall == true then
+                    -- Change to next world in the list
+                    local nextWorldIndex = (currentWorldIndex % #worlds) + 1
+                    local nextWorld = worlds[nextWorldIndex]
+                    currentWorldIndex = nextWorldIndex
+            
+                    local args = {[1] = nextWorld}
+                    game:GetService("ReplicatedStorage")
+                        :WaitForChild("Remotes")
+                        :WaitForChild("Teleport")
+                        :InvokeServer(unpack(args))
+            
+                    timeElapsed = 0
+                end
+            end
+            
+                if getgenv().autofarmgemsall == false then 
+                    break
+                end
+        end
+    end)
+end
+
+local function autoHatch1(egg, amount)
+    spawn(function()
+        while getgenv().autohatch1 == true do 
+            bypass_tp(workspace.Eggs[selectedegg1].Eggname.CFrame.Position)
+            while getgenv().autohatch1 == true do
+                local args = {
+                    [1] = egg,
+                    [2] = amount
+                }
+                
+                game:GetService("ReplicatedStorage").Remotes.EggOpened:InvokeServer(unpack(args))
+                wait(0)
+                
+                if getgenv().autohatch1 == false then
+                    break
+                end
+            end
+        end
+    end)
+end
+
+local function autoHatch3(egg, amount)
+    spawn(function()
+        while getgenv().autohatch3 == true do 
+            bypass_tp(workspace.Eggs[selectedegg2].Eggname.CFrame.Position)
+            while getgenv().autohatch3 == true do
+                local args = {
+                    [1] = egg,
+                    [2] = amount
+                }
+                
+                game:GetService("ReplicatedStorage").Remotes.EggOpened:InvokeServer(unpack(args))
+                wait(0)
+                
+                if getgenv().autohatch3 == false then
+                    break
+                end
+            end
+        end
+    end)
+end
+
+local function autoRankUp()
+    spawn(function()
+        while getgenv().autorankup == true do
+            for i = 1, 99 do
+                game:GetService("ReplicatedStorage").Remotes.BuyRank:FireServer(i)
+                wait(0)
+                
+                if getgenv().autorankup == false then
+                    break
+                end
+            end
+        end
+    end)
+end
+
+local function autoCraftAll()
+    spawn(function()
+        for i, petid in ipairs(CraftTable) do
+            local args = {
+                [1] = "Craft",
+                [2] = petid
+            }
+            
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("PetAction"):InvokeServer(unpack(args))
+        
+            wait(0)
+            
+            if getgenv().autocraftall == false then
+                break
+            end
+        end
+    end)
+end
+
+local function autoEquipBest()
+    spawn(function()
+        while getgenv().autoequipbest == true do
+            for i, petid in ipairs(CraftTable) do
+                local args = {
+                    [1] = "Equip",
+                    [2] = petid
+                }
+                
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("PetAction"):InvokeServer(unpack(args))
+                
+            
+                wait(0)
+                
+                if getgenv().autocraftall == false then
+                    break
+                end
+            end
+        end
+    end)
+end
+
+local function Upgrade1(upgrade_1)
+    spawn(function()
+        while getgenv().upgrade1 == true do
+                local args = {
+                    [1] = upgrade_1
+                }
+                
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Upgrades"):FireServer(unpack(args))
+                wait(0)
+                
+                if getgenv().upgrade1 == false then
+                    break
+            end
+        end
+    end)
+end
+
+local function Upgrade2(upgrade_2)
+    spawn(function()
+                local args = {
+                    [1] = upgrade_2
+                }
+                
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Upgrades"):FireServer(unpack(args))
+                wait(0)
+    end)
+end
+
+local function Upgrade3(upgrade_3)
+    spawn(function()
+        while getgenv().upgrade3 == true do
+                local args = {
+                    [1] = upgrade_3
+                }
+                
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Upgrades"):FireServer(unpack(args))
+                wait(0)
+                
+                if getgenv().upgrade3 == false then
+                    break
+            end
+        end
+    end)
+end
+
+local function Upgrade4(upgrade_4)
+    spawn(function()
+                local args = {
+                    [1] = upgrade_4
+                }
+                
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Upgrades"):FireServer(unpack(args))
+                wait(0)
+    end)
+end
+
+local function Upgrade5(upgrade_5)
+    spawn(function()
+        while getgenv().upgrade5 == true do
+                local args = {
+                    [1] = upgrade_5
+                }
+                
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Upgrades"):FireServer(unpack(args))
+                wait(0)
+                
+                if getgenv().upgrade5 == false then
+                    break
+            end
+        end
+    end)
+end
+
+local function Upgrade6(upgrade_6)
+    spawn(function()
+        while getgenv().upgrade6 == true do
+                local args = {
+                    [1] = upgrade_6
+                }
+                
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Upgrades"):FireServer(unpack(args))
+                wait(0)
+                
+                if getgenv().upgrade6 == false then
+                    break
+            end
+        end
+    end)
+end
+
+local function Upgrade7(upgrade_7)
+    spawn(function()
+        while getgenv().upgrade7 == true do
+                local args = {
+                    [1] = upgrade_7
+                }
+                
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Upgrades"):FireServer(unpack(args))
+                wait(0)
+                
+                if getgenv().upgrade7 == false then
+                    break
+            end
+        end
+    end)
+end
+
+local function Upgrade8(upgrade_8)
+    spawn(function()
+                local args = {
+                    [1] = upgrade_8
+                }
+                
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Upgrades"):FireServer(unpack(args))
+                wait(0)
+    end)
+end
+
+local function autoClaimChest()
+    spawn(function()
+        while getgenv().autoclaimchest == true do
+        local args = {
+            [1] = "Daily"
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("ClaimChest"):FireServer(unpack(args))
+        wait(0)
+        if getgenv().autoclaimchest == false then
+            break
+        end
+    end
+end)
+end
+
+local function autoClaimGChest()
+    spawn(function()
+        while getgenv().autoclaimgchest == true do
+        local args = {
+            [1] = "Group"
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("ClaimChest"):FireServer(unpack(args))
+        wait(0)
+         if getgenv().autoclaimgchest == false then
+            break
+        end
+    end
+end)
+end
+
+local function autoClaimAch()
+    spawn(function()
+        while getgenv().autoclaimach == true do
+            local args = {
+                [1] = {
+                    ["Prices"] = {
+                        [1] = 250,
+                        [2] = 750,
+                        [3] = 2500,
+                        [4] = 10000,
+                        [5] = 75000,
+                        [6] = 250000,
+                        [7] = 500000,
+                        [8] = 1000000,
+                        [9] = 2000000,
+                        [10] = "Max"
+                    },
+                    ["Title"] = "Collect %s Stars",
+                    ["StatName"] = "Achievement1",
+                    ["RequiredStat"] = "StarsCollected",
+                    ["ProgressText"] = "x Star Multiplier",
+                    ["ShorteningType"] = "en",
+                    ["Reward"] = {
+                        [1] = 0.2,
+                        [2] = 0.4,
+                        [3] = 0.5,
+                        [4] = 0.7,
+                        [5] = 0.8,
+                        [6] = 0.9,
+                        [7] = 1,
+                        [8] = 1.2,
+                        [9] = 1.4,
+                        [10] = 1.5
+                    }
+                },
+                [2] = 5
+            }
+            
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CompleteAchievement"):FireServer(unpack(args))
+            
+        wait(0)
+         if getgenv().autoclaimach == false then
+            break
+        end
+    end
+end)
+end
+
+
+
+        
+        
+    
+
+
+local w = library:CreateWindow("[🌸Sakura!🌸] Rank Simulator X") 
+local b = w:CreateFolder("Farming") 
+b:Dropdown("Select farming area", FarmAreasTable ,true,function(value)
+    selectedfarmarea = value
+    print(value)
+end)
+b:Toggle("Auto farm All",function(bool)
+    getgenv().autofarmtest = bool
+    print("Auto farm is", bool)
+    if bool then 
+     autofarmTest(selectedfarmarea)
+    end
+end)
+b:Toggle("Auto farm Gems",function(bool)
+    getgenv().autofarmgems = bool
+    print("Auto farm is", bool)
+    if bool then 
+     autofarmGems(selectedfarmarea)
+    end
+end)
+b:Toggle("DONT USE Auto farm All Gem(only use if u have all worlds)",function(bool)
+    getgenv().autofarmgemsall = bool
+    print("Auto farm All Gem", bool)
+    if bool then 
+     autofarmGemsAll()
+    end
+end)
+b:Toggle("Auto RankUp",function(bool)
+    getgenv().autorankup = bool
+    print("Auto RankUp is", bool)
+    if bool then 
+     autoRankUp()
+    end
+end)
+
+local b = w:CreateFolder("Hatching") 
+b:Dropdown("Select Egg", EggTable ,true,function(value)
+    selectedegg1 = value
+    selectedegg2 = value
+    print(value)
+end)
+b:Toggle("Auto Hatch(1)",function(bool)
+    getgenv().autohatch1 = bool
+    print("Auto Hatch(1) is", bool)
+    if bool then 
+     autoHatch1(selectedegg1, 1)
+    end
+end)
+b:Toggle("Auto Hatch(3)",function(bool)
+    getgenv().autohatch3 = bool
+    print("Auto Hatch(3) is", bool)
+    if bool then 
+     autoHatch3(selectedegg2, 3)
+    end
+end)
+b:Toggle("DONT USE Auto Craft",function(bool)
+    getgenv().autocraftall = bool
+    print("Auto Craft is", bool)
+    if bool then 
+     autoCraftAll()
+    end
+end)
+b:Toggle("DONT USE Auto EquipBest",function(bool)
+    getgenv().autoequipbest = bool
+    print("Auto EquipBest is", bool)
+    if bool then 
+     autoEquipBest()
+    end
+end)
+
+
+local b = w:CreateFolder("Upgrades") 
+b:Button("More Pet Luck)",function() 
+    Upgrade2(2)
+    end)
+b:Button("Extra Pet Equip(50k Gems)",function() 
+    Upgrade4(4)
+    end)
+b:Button("Auto Craft(500k Gems)",function()
+    Upgrade8(8)    
+end)
+b:Toggle("Get More Stars",function(bool)
+    getgenv().upgrade1 = bool
+    print("Get More Stars", bool)
+    if bool then 
+     Upgrade1(1)
+    end
+end)
+b:Toggle("Get More Gems",function(bool)
+    getgenv().upgrade3 = bool
+    print("Get More Gems", bool)
+    if bool then 
+     Upgrade3(3)
+    end
+end)
+b:Toggle("HatchSpeed",function(bool)
+    getgenv().upgrade5 = bool
+    print("HatchSpeed", bool)
+    if bool then 
+     Upgrade5(5)
+    end
+end)
+b:Toggle("WalkSpeed",function(bool)
+    getgenv().upgrade6 = bool
+    print("WalkSpeed", bool)
+    if bool then 
+     Upgrade6(6)
+    end
+end)
+b:Toggle("MaxCombo",function(bool)
+    getgenv().upgrade7 = bool
+    print("MaxCombo", bool)
+    if bool then 
+     Upgrade7(7)
+    end
+end)
+
+
+
+local b = w:CreateFolder("Teleport World") 
+b:Dropdown("Select world", AreasTable ,true,function(value)
+    selectedworld = value 
+end)
+
+b:Button("Teleport",function()
+    if selectedworld then 
+    teleportworld(selectedworld)
+    end
+end)
+
+local b = w:CreateFolder("Misc") 
+b:Toggle("AutoClaimDailyChest",function(bool)
+    getgenv().autoclaimchest = bool
+    print("AutoClaimDailyChest", bool)
+    if bool then 
+    autoClaimChest()
+    end
+end)
+b:Toggle("AutoClaimGroupChest",function(bool)
+    getgenv().autoclaimgchest = bool
+    print("AutoClaimGroupChest", bool)
+    if bool then 
+    autoClaimGChest()
+    end
+end)
+b:Toggle("AutoClaimAchievments",function(bool)
+    getgenv().autoclaimgchest = bool
+    print("AutoClaimAchievments", bool)
+    if bool then 
+    autoClaimAch()
+    end
+end)
+b:DestroyGui()
+
+
