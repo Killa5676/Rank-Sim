@@ -210,8 +210,6 @@ end
 
 local function autoHatch1(egg, amount)
     spawn(function()
-        while getgenv().autohatch1 == true do 
-            bypass_tp(workspace.Eggs[selectedegg1].Eggname.CFrame.Position)
             while getgenv().autohatch1 == true do
                 local args = {
                     [1] = egg,
@@ -225,7 +223,6 @@ local function autoHatch1(egg, amount)
                     break
                 end
             end
-        end
     end)
 end
 
