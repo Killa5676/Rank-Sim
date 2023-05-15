@@ -2,7 +2,8 @@
 getgenv().autofarmtest = false
 getgenv().autofarmgems = false
 getgenv().autofarmgemsall = false
-
+--Teleport
+getgenv().teleportworlds = false
 --Hatching
 getgenv().autohatch1 = false
 getgenv().autohatch3 = false
@@ -19,6 +20,8 @@ getgenv().upgrade7 = false
 getgenv().autoclaimchest = false
 getgenv().autoclaimgchest = false
 getgenv().autoclaimach = false
+getgenv().autoclaimspin = false
+
 
 local library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall%20v3')))()
 
@@ -84,9 +87,13 @@ function teleporto(placeCframe)
 end
 
 function teleportworld(world)
-    if workspace.PortalReceivers:FindFirstChild(world) then
-        bypass_tp(workspace.PortalReceivers[world].CFrame.Position)
-    end
+    spawn(function()
+        local args = {
+            [1] = world
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Teleport"):InvokeServer(unpack(args))
+end)
 end
 
 local function autofarmTest(world)
@@ -498,6 +505,19 @@ local function autoClaimAch()
 end)
 end
 
+local function autoClaimSpin()
+    spawn(function()
+        while getgenv().autoclaimspin == true do
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Spin"):InvokeServer()
+        wait(0)
+         if getgenv().autoclaimspin == false then
+            break
+        end
+    end
+end)
+end
+
+
 
 
         
@@ -655,6 +675,13 @@ b:Toggle("AutoClaimAchievments",function(bool)
     print("AutoClaimAchievments", bool)
     if bool then 
     autoClaimAch()
+    end
+end)
+b:Toggle("AutoSpin",function(bool)
+    getgenv().autoclaimspin = bool
+    print("AutoSpin", bool)
+    if bool then 
+    autoClaimSpin()
     end
 end)
 b:DestroyGui()
