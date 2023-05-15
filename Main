@@ -104,6 +104,7 @@ local function autofarmTest(world)
             }
             
             game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Teleport"):InvokeServer(unpack(args))
+            wait(3)
             
         while getgenv().autofarmtest == true do
             local spawns = workspace.SpawnZones[selectedfarmarea]:GetChildren()
