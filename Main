@@ -32,6 +32,7 @@ for i,v in pairs(Areas)do
     table.insert(AreasTable, v.Name)
 end
 
+local autofarmSpeed = 0.3 
 local selectedfarmarea
 local FarmAreas = workspace.SpawnZones:GetChildren()
 local FarmAreasTable = {}
@@ -106,21 +107,21 @@ local function autofarmTest(world)
             game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Teleport"):InvokeServer(unpack(args))
             wait(3)
             
-        while getgenv().autofarmtest == true do
-            local spawns = workspace.SpawnZones[selectedfarmarea]:GetChildren()
-            for _, spawn in ipairs(spawns) do
-                if spawn:FindFirstChild("MainPart") then
-                    bypass_tp(spawn.MainPart.CFrame.Position)
-                    wait(0.3)
-                    if getgenv().autofarmtest == false then
-                        break
-                    end
+            while getgenv().autofarmtest == true do
+                local spawns = workspace.SpawnZones[selectedfarmarea]:GetChildren()
+                for _, spawn in ipairs(spawns) do
+                    if spawn:FindFirstChild("MainPart") then
+                        bypass_tp(spawn.MainPart.CFrame.Position)
+                        wait(autofarmSpeed)
+                        if not getgenv().autofarmtest then
+                            break
+                        end
                     end
                 end
             end
         end
     end)
-end
+end 
 local function autofarmGems(world)
     spawn(function()
         while getgenv().autofarmgems == true do
@@ -216,7 +217,7 @@ local function autofarmGemsAll()
     end)
 end
 
-local function autoHatch1(egg, amount)
+local function autoHatch1(egg, amount, world)
     spawn(function()
             while getgenv().autohatch1 == true do
                 local args = {
@@ -532,6 +533,13 @@ b:Dropdown("Select farming area", FarmAreasTable ,true,function(value)
     selectedfarmarea = value
     print(value)
 end)
+b:Slider("Autofarm Speed",{
+    min = 0.1; -- min value of the slider
+    max = 1; -- max value of the slider
+    precise = true; -- max 2 decimals
+},function(value)
+    autofarmSpeed = value
+end)
 b:Toggle("Auto farm All",function(bool)
     getgenv().autofarmtest = bool
     print("Auto farm is", bool)
@@ -571,7 +579,7 @@ b:Toggle("Auto Hatch(1)",function(bool)
     getgenv().autohatch1 = bool
     print("Auto Hatch(1) is", bool)
     if bool then 
-     autoHatch1(selectedegg1, 1)
+     autoHatch1(selectedegg1, 1, selectedegg1)
     end
 end)
 b:Toggle("Auto Hatch(3)",function(bool)
