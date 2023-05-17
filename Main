@@ -22,8 +22,8 @@ getgenv().autoclaimgchest = false
 getgenv().autoclaimach = false
 getgenv().autoclaimspin = false
 
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
-local library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall%20v3')))()
 
 local selectedworld 
 local Areas = workspace.PortalReceivers:GetChildren()
@@ -517,180 +517,319 @@ end)
 end
 
 
+local Window = OrionLib:MakeWindow({Name = "[🚨UPDATE!🚨] Rank Simulator X", HidePremium = false, SaveConfig = true, ConfigFolder = "Killa Hub"})
 
+--[[
+Name = <string> - The name of the UI.
+HidePremium = <bool> - Whether or not the user details shows Premium status or not.
+SaveConfig = <bool> - Toggles the config saving in the UI.
+ConfigFolder = <string> - The name of the folder where the configs are saved.
+IntroEnabled = <bool> - Whether or not to show the intro animation.
+IntroText = <string> - Text to show in the intro animation.
+IntroIcon = <string> - URL to the image you want to use in the intro animation.
+Icon = <string> - URL to the image you want displayed on the window.
+CloseCallback = <function> - Function to execute when the window is closed.
+]]
 
-        
-        
-    
+local Tab = Window:MakeTab({
+	Name = "Farming",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
 
+local Section = Tab:AddSection({
+	Name = "Normal AutoFarms"
+})
+Tab:AddDropdown({
+	Name = "Select World",
+	Default = "Spawn",
+	Options = FarmAreasTable,
+	Callback = function(value)
+        selectedfarmarea = value
+		print(value)
+	end    
+})
 
-local w = library:CreateWindow("[🌸Sakura!🌸] Rank Simulator X") 
-local b = w:CreateFolder("Farming") 
-b:Dropdown("Select farming area", FarmAreasTable ,true,function(value)
-    selectedfarmarea = value
-    print(value)
-end)
-b:Slider("Autofarm Speed",{
-    min = 0.1;
-    max = 1;
-    precise = true;
-    default = autofarmSpeed -- Set default value of slider to autofarmSpeed
-},function(value)
-    autofarmSpeed = value -- Update the variable whenever the slider is changed
-end)
-b:Toggle("Auto farm All",function(bool)
-    getgenv().autofarmtest = bool
+Tab:AddSlider({
+	Name = "Slider",
+	Min = 0.1,
+	Max = 1,
+	Default = 0.3,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.1,
+	ValueName = "Farm Speed",
+	Callback = function(value)
+        autofarmSpeed = value
+		print(value)
+	end    
+})
+
+Tab:AddToggle({
+	Name = "AutoFarm Selected",
+	Default = false,
+	Callback = function(bool)
+		getgenv().autofarmtest = bool
     print("Auto farm is", bool)
     if bool then 
      autofarmTest(selectedfarmarea)
     end
-end)
-b:Toggle("Auto farm Gems",function(bool)
-    getgenv().autofarmgems = bool
-    print("Auto farm is", bool)
-    if bool then 
-     autofarmGems(selectedfarmarea)
+	end    
+})
+
+Tab:AddToggle({
+	Name = "AutoFarm Gems Selected",
+	Default = false,
+	Callback = function(bool)
+        getgenv().autofarmgems = bool
+        print("Auto farm is", bool)
+        if bool then 
+         autofarmGems(selectedfarmarea)
     end
-end)
-b:Toggle("(Working✅)Auto farm All Gems)",function(bool)
-    getgenv().autofarmgemsall = bool
+	end    
+})
+
+local Section = Tab:AddSection({
+	Name = "OP AutoFarms"
+})
+Tab:AddToggle({
+	Name = "AutoFarm All Gems(⚠️ Need all worlds)",
+	Default = false,
+	Callback = function(bool)
+        getgenv().autofarmgemsall = bool
     print("Auto farm All Gem", bool)
     if bool then 
      autofarmGemsAll()
     end
-end)
-b:Toggle("Auto RankUp",function(bool)
-    getgenv().autorankup = bool
-    print("Auto RankUp is", bool)
-    if bool then 
-     autoRankUp()
-    end
-end)
+	end    
+})
 
-local b = w:CreateFolder("Hatching") 
-b:Dropdown("Select Egg", EggTable ,true,function(value)
+local Section = Tab:AddSection({
+	Name = "Misc"
+})
+Tab:AddToggle({
+	Name = "Auto RankUp",
+	Default = false,
+	Callback = function(bool)
+        getgenv().autorankup = bool
+        print("Auto RankUp is", bool)
+        if bool then 
+         autoRankUp()
+    end
+	end    
+})
+
+local Tab = Window:MakeTab({
+	Name = "Hatching",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+	Name = "Hatching"
+})
+Tab:AddDropdown({
+	Name = "Select Egg",
+	Default = "Basic",
+	Options = EggTable,
+	Callback = function(value)
     selectedegg1 = value
     selectedegg2 = value
     print(value)
-end)
-b:Toggle("Auto Hatch(1)",function(bool)
-    getgenv().autohatch1 = bool
-    print("Auto Hatch(1) is", bool)
-    if bool then 
-     autoHatch1(selectedegg1, 1, selectedegg1)
+	end    
+})
+Tab:AddToggle({
+	Name = "Auto Hatch(1)",
+	Default = false,
+	Callback = function(bool)
+        getgenv().autohatch1 = bool
+        print("Auto Hatch(1) is", bool)
+        if bool then 
+         autoHatch1(selectedegg1, 1, selectedegg1)
     end
-end)
-b:Toggle("Auto Hatch(3)",function(bool)
-    getgenv().autohatch3 = bool
+	end    
+})
+Tab:AddToggle({
+	Name = "Auto Hatch(3)(⚠️ Join Game Group)",
+	Default = false,
+	Callback = function(bool)
+        getgenv().autohatch3 = bool
     print("Auto Hatch(3) is", bool)
     if bool then 
      autoHatch3(selectedegg2, 3)
     end
-end)
-b:Toggle("DONT USE Auto Craft",function(bool)
-    getgenv().autocraftall = bool
-    print("Auto Craft is", bool)
-    if bool then 
-     autoCraftAll()
-    end
-end)
-b:Toggle("DONT USE Auto EquipBest",function(bool)
-    getgenv().autoequipbest = bool
-    print("Auto EquipBest is", bool)
-    if bool then 
-     autoEquipBest()
-    end
-end)
+	end    
+})
 
+local Section = Tab:AddSection({
+	Name = "Misc - Working on it :)"
+})
 
-local b = w:CreateFolder("Upgrades") 
-b:Button("More Pet Luck)",function() 
-    Upgrade2(2)
-    end)
-b:Button("Extra Pet Equip(50k Gems)",function() 
-    Upgrade4(4)
-    end)
-b:Button("Auto Craft(500k Gems)",function()
-    Upgrade8(8)    
-end)
-b:Toggle("Get More Stars",function(bool)
-    getgenv().upgrade1 = bool
+local Tab = Window:MakeTab({
+	Name = "Upgrades",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+	Name = "One Time Upgrades"
+})
+Tab:AddButton({
+	Name = "More Pet Luck",
+	Callback = function()
+        Upgrade2(2)
+  	end    
+})
+Tab:AddButton({
+	Name = "Extra Pet Equip(50k Gems)",
+	Callback = function()
+        Upgrade4(4)
+  	end    
+})
+Tab:AddButton({
+	Name = "Auto Craft(500k Gems)",
+	Callback = function()
+        Upgrade8(8)
+  	end    
+})
+
+local Section = Tab:AddSection({
+	Name = "Upgrades"
+})
+Tab:AddToggle({
+	Name = "Get More Stars",
+	Default = false,
+	Callback = function(bool)
+        getgenv().upgrade1 = bool
     print("Get More Stars", bool)
     if bool then 
      Upgrade1(1)
     end
-end)
-b:Toggle("Get More Gems",function(bool)
-    getgenv().upgrade3 = bool
-    print("Get More Gems", bool)
-    if bool then 
-     Upgrade3(3)
+	end    
+})
+Tab:AddToggle({
+	Name = "Get More Gems",
+	Default = false,
+	Callback = function(bool)
+        getgenv().upgrade3 = bool
+        print("Get More Gems", bool)
+        if bool then 
+         Upgrade3(3)
     end
-end)
-b:Toggle("HatchSpeed",function(bool)
-    getgenv().upgrade5 = bool
+	end    
+})
+Tab:AddToggle({
+	Name = "HatchSpeed",
+	Default = false,
+	Callback = function(bool)
+        getgenv().upgrade5 = bool
     print("HatchSpeed", bool)
     if bool then 
      Upgrade5(5)
     end
-end)
-b:Toggle("WalkSpeed",function(bool)
-    getgenv().upgrade6 = bool
+	end    
+})
+Tab:AddToggle({
+	Name = "WalkSpeed",
+	Default = false,
+	Callback = function(bool)
+        getgenv().upgrade6 = bool
     print("WalkSpeed", bool)
     if bool then 
      Upgrade6(6)
     end
-end)
-b:Toggle("MaxCombo",function(bool)
-    getgenv().upgrade7 = bool
+	end    
+})
+Tab:AddToggle({
+	Name = "MaxCombo",
+	Default = false,
+	Callback = function(bool)
+        getgenv().upgrade7 = bool
     print("MaxCombo", bool)
     if bool then 
      Upgrade7(7)
     end
-end)
+	end    
+})
 
+local Tab = Window:MakeTab({
+	Name = "Teleport",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
 
+Tab:AddDropdown({
+	Name = "Select World",
+	Default = "Spawn",
+	Options = AreasTable,
+	Callback = function(value)
+        selectedworld = value
+    print(value)
+	end    
+})
+Tab:AddButton({
+	Name = "Teleport Selected World",
+	Callback = function()
+        teleportworld(selectedworld)
+  	end    
+})
 
-local b = w:CreateFolder("Teleport World") 
-b:Dropdown("Select world", AreasTable ,true,function(value)
-    selectedworld = value 
-end)
+local Tab = Window:MakeTab({
+	Name = "Misc",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
 
-b:Button("Teleport",function()
-    if selectedworld then 
-    teleportworld(selectedworld)
+Tab:AddToggle({
+	Name = "AutoClaimDailyChest",
+	Default = false,
+	Callback = function(bool)
+        getgenv().autoclaimchest = bool
+        print("AutoClaimDailyChest", bool)
+        if bool then 
+        autoClaimChest()
     end
-end)
-
-local b = w:CreateFolder("Misc") 
-b:Toggle("AutoClaimDailyChest",function(bool)
-    getgenv().autoclaimchest = bool
-    print("AutoClaimDailyChest", bool)
-    if bool then 
-    autoClaimChest()
-    end
-end)
-b:Toggle("AutoClaimGroupChest",function(bool)
-    getgenv().autoclaimgchest = bool
+	end    
+})
+Tab:AddToggle({
+	Name = "AutoClaimGroupChest",
+	Default = false,
+	Callback = function(bool)
+        getgenv().autoclaimgchest = bool
     print("AutoClaimGroupChest", bool)
     if bool then 
     autoClaimGChest()
     end
-end)
-b:Toggle("AutoClaimAchievments",function(bool)
-    getgenv().autoclaimgchest = bool
-    print("AutoClaimAchievments", bool)
-    if bool then 
-    autoClaimAch()
-    end
-end)
-b:Toggle("AutoSpin",function(bool)
-    getgenv().autoclaimspin = bool
+	end    
+})
+Tab:AddToggle({
+	Name = "AutoSpin",
+	Default = false,
+	Callback = function(bool)
+        getgenv().autoclaimspin = bool
     print("AutoSpin", bool)
     if bool then 
     autoClaimSpin()
     end
-end)
-b:DestroyGui()
+	end    
+})
+
+
+OrionLib:Init()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
