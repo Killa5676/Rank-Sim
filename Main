@@ -140,7 +140,7 @@ local function autofarmGems(world)
                 for _, child in ipairs(workspace.SpawnZones[selectedfarmarea]:GetChildren()) do
                     if child.Name == "Gem" then
                         bypass_tp(child.MainPart.CFrame.Position)
-                        wait(0.3)
+                        wait(autofarmSpeed)
                         gemFound = true
                     end
                 end
@@ -151,71 +151,68 @@ local function autofarmGems(world)
         end
     end)
 end
-
 local function autofarmGemsAll()
-    spawn(function()
-        local worlds = {
-            "Spawn",
-            "Forest",
-            "Frosty",
-            "Mine",
-            "Aqua"
-        }
+    while  autofarmgemsall == true do
+        if not getgenv().autofarmgemsall then
+            break
+        end
         
-        while getgenv().autofarmgemsall == true do
-            local gemFound = false
+        -- Create a table of the spawn zones in the order we want to search them
+        local spawnZones = {"Spawn", "Forest", "Frosty", "Mine", "Aqua", "Steampunk"}
+        
+        -- Loop through each spawn zone in the table
+        for i = 1, #spawnZones do
+            -- Teleport to the current spawn zone
+            local args = {[1] = spawnZones[i]}
+            game:GetService("ReplicatedStorage").Remotes.Teleport:InvokeServer(unpack(args))
             
-            for _, world in ipairs(worlds) do
-                local args = {[1] = world}
-                game:GetService("ReplicatedStorage")
-                    :WaitForChild("Remotes")
-                    :WaitForChild("Teleport")
-                    :InvokeServer(unpack(args))
+            -- Search for gems in the current spawn zone
+            local gemFound = true  -- Assume we will find at least one gem
             
-                repeat
-                    local gemFound = false
-                    
-                    for _, child in ipairs(workspace.SpawnZones[world]:GetChildren()) do
-                        if child.Name == "Gem" then
-                            bypass_tp(child.MainPart.CFrame.Position)
-                            wait(2) -- added a 2 second delay before teleporting to the gem
-                            gemFound = true
-                        end
-                    end
-                    
-                    if not gemFound then
-                        wait(1)
-                        timeElapsed = timeElapsed + 1
-                        if timeElapsed >= 1 then -- change world if no gems found for 1 or more seconds
-                            break
-                        end
-                    else
-                        timeElapsed = 0 -- reset timer if gem is found
-                    end
-                until gemFound == true or getgenv().autofarmgemsall == false
+            while gemFound == true do
+                gemFound = false  -- Reset flag
                 
-                if not gemFound and getgenv().autofarmgemsall == true then
-                    -- Change to next world in the list
-                    local nextWorldIndex = (currentWorldIndex % #worlds) + 1
-                    local nextWorld = worlds[nextWorldIndex]
-                    currentWorldIndex = nextWorldIndex
-            
-                    local args = {[1] = nextWorld}
-                    game:GetService("ReplicatedStorage")
-                        :WaitForChild("Remotes")
-                        :WaitForChild("Teleport")
-                        :InvokeServer(unpack(args))
-            
-                    timeElapsed = 0
+                -- Loop through all children of the current spawn zone with the same name as the spawn zone
+                for _, child in ipairs(workspace.SpawnZones[spawnZones[i]]:GetChildren()) do
+                    if child.Name == "Gem" then
+                        bypass_tp(child.MainPart.CFrame.Position)
+                        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+                        wait(autofarmSpeed)
+                        gemFound = true
+                        break
+                    end
+                end
+                
+                -- Check if autofarmgemsall has been set to false
+                if not getgenv().autofarmgemsall then
+                    break
                 end
             end
             
-                if getgenv().autofarmgemsall == false then 
-                    break
-                end
+            -- If there are no more gems in the current spawn zone, move on to the next one
+            if i < #spawnZones then
+                local args = {[1] = spawnZones[i+1]}
+                game:GetService("ReplicatedStorage").Remotes.Teleport:InvokeServer(unpack(args))
+            end
+            
+            -- Check if autofarmgemsall has been set to false
+            if not getgenv().autofarmgemsall then
+                break
+            end
         end
-    end)
+        
+        -- Check if autofarmgemsall has been set to false
+        if not getgenv().autofarmgemsall then
+            break
+        end
+    end
 end
+
+
+
+
+
+
 
 local function autoHatch1(egg, amount, world)
     spawn(function()
@@ -534,11 +531,12 @@ b:Dropdown("Select farming area", FarmAreasTable ,true,function(value)
     print(value)
 end)
 b:Slider("Autofarm Speed",{
-    min = 0.1; -- min value of the slider
-    max = 1; -- max value of the slider
-    precise = true; -- max 2 decimals
+    min = 0.1;
+    max = 1;
+    precise = true;
+    default = autofarmSpeed -- Set default value of slider to autofarmSpeed
 },function(value)
-    autofarmSpeed = value
+    autofarmSpeed = value -- Update the variable whenever the slider is changed
 end)
 b:Toggle("Auto farm All",function(bool)
     getgenv().autofarmtest = bool
@@ -554,7 +552,7 @@ b:Toggle("Auto farm Gems",function(bool)
      autofarmGems(selectedfarmarea)
     end
 end)
-b:Toggle("DONT USE Auto farm All Gem(only use if u have all worlds)",function(bool)
+b:Toggle("(Working✅)Auto farm All Gems)",function(bool)
     getgenv().autofarmgemsall = bool
     print("Auto farm All Gem", bool)
     if bool then 
