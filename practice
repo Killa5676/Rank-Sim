@@ -1,1 +1,25 @@
+local PathfindingService = game:GetService("PathfindingService")
+
+function walk_to_cf(v)
+    if lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') then
+        local cf = CFrame.new(v)
+        
+        -- find the path from the player's current position to the target CFrame
+        local path = PathfindingService:CreatePath({
+            AgentRadius = 2,
+            AgentHeight = 5,
+            AgentCanJump = true,
+            StartPosition = lp.Character.HumanoidRootPart.Position,
+            EndPosition = cf.p
+        })
+        path:ComputeAsync()
+        
+        -- move the player along the path
+        local waypoints = path:GetWaypoints()
+        for _, waypoint in ipairs(waypoints) do
+            lp.Character:SetPrimaryPartCFrame(waypoint.CFrame)
+            wait(0.1)
+        end
+    end
+end
 
