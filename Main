@@ -551,7 +551,7 @@ Tab:AddDropdown({
 })
 
 Tab:AddSlider({
-	Name = "Slider",
+	Name = "AutoFarm Speed",
 	Min = 0.1,
 	Max = 1,
 	Default = 0.3,
