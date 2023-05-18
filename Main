@@ -24,6 +24,8 @@ getgenv().autoclaimspin = false
 
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
+local selectedfarmethod
+local FarmMethodTable = {"Tween", "Normal(Broken)"}
 
 local selectedworld 
 local Areas = workspace.PortalReceivers:GetChildren()
@@ -55,6 +57,35 @@ for i,v in pairs (Craft) do
 end
 
 
+local Players = game:GetService("Players")
+local PathfindingService = game:GetService("PathfindingService")
+
+local lp = Players.LocalPlayer
+
+function Normal(v)
+    if lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') then
+        -- Create new CFrame from input position v
+        local cf = CFrame.new(v)
+        
+        -- Find the path from the player's current position to the target CFrame
+        local path = PathfindingService:CreatePath({
+            AgentRadius = 2,
+            AgentHeight = 5,
+            AgentCanJump = true,
+            StartPosition = lp.Character.HumanoidRootPart.Position,
+            EndPosition = cf.p
+        })
+        path:ComputeAsync()
+        
+        -- Move the player along the path by setting their primary part's CFrame to each waypoint's CFrame
+        local waypoints = path:GetWaypoints()
+        for _, waypoint in ipairs(waypoints) do
+            lp.Character:SetPrimaryPartCFrame(waypoint.CFrame)
+            wait(0.1)
+        end
+    end
+end
+
 
 
 local Players = game:GetService("Players")
@@ -64,7 +95,7 @@ local tween_info = TweenInfo.new(0.1, Enum.EasingStyle.Linear)
 local lp = Players.LocalPlayer
 
 
-function bypass_tp(v)
+function Tween(v)
     if lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') then
         local cf = CFrame.new(v)
         local a = tween_s:Create(lp.Character.HumanoidRootPart, tween_info, {CFrame = cf})
@@ -97,7 +128,7 @@ function teleportworld(world)
 end)
 end
 
-local function autofarmTest(world)
+local function autofarmTest(world, farmethod)
     spawn(function()
         while getgenv().autofarmtest == true do
             local args = {
@@ -111,7 +142,7 @@ local function autofarmTest(world)
                 local spawns = workspace.SpawnZones[selectedfarmarea]:GetChildren()
                 for _, spawn in ipairs(spawns) do
                     if spawn:FindFirstChild("MainPart") then
-                        bypass_tp(spawn.MainPart.CFrame.Position)
+                        farmethod(spawn.MainPart.CFrame.Position)
                         wait(autofarmSpeed)
                         if not getgenv().autofarmtest then
                             break
@@ -139,7 +170,7 @@ local function autofarmGems(world)
             repeat
                 for _, child in ipairs(workspace.SpawnZones[selectedfarmarea]:GetChildren()) do
                     if child.Name == "Gem" then
-                        bypass_tp(child.MainPart.CFrame.Position)
+                        Tween(child.MainPart.CFrame.Position)
                         wait(autofarmSpeed)
                         gemFound = true
                     end
@@ -175,7 +206,7 @@ local function autofarmGemsAll()
                 -- Loop through all children of the current spawn zone with the same name as the spawn zone
                 for _, child in ipairs(workspace.SpawnZones[spawnZones[i]]:GetChildren()) do
                     if child.Name == "Gem" then
-                        bypass_tp(child.MainPart.CFrame.Position)
+                        Tween(child.MainPart.CFrame.Position)
                         game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
                         wait(autofarmSpeed)
                         gemFound = true
@@ -550,6 +581,16 @@ Tab:AddDropdown({
 	end    
 })
 
+Tab:AddDropdown({
+	Name = "AutoFarm Method",
+	Default = "Tween",
+	Options = FarmMethodTable,
+	Callback = function(value)
+        selectedfarmethod = value
+		print(value)
+	end    
+})
+
 Tab:AddSlider({
 	Name = "AutoFarm Speed",
 	Min = 0.1,
@@ -570,8 +611,11 @@ Tab:AddToggle({
 	Callback = function(bool)
 		getgenv().autofarmtest = bool
     print("Auto farm is", bool)
-    if bool then 
-     autofarmTest(selectedfarmarea)
+    if selectedfarmethod == "Normal" and bool then
+     autofarmTest(selectedfarmarea, Normal)
+    else if selectedfarmethod == "Tween" and bool then
+        autofarmTest(selectedfarmarea, Tween)
+    end
     end
 	end    
 })
