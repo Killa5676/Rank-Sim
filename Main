@@ -24,6 +24,9 @@ getgenv().autoclaimspin = false
 
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
+local selectedgui
+local GuiTable = {"Achievements", "RankShop", "SpinWheel","UpgradeShop","Index",}
+
 local selectedfarmethod
 local FarmMethodTable = {"Tween", "Normal(Broken)"}
 
@@ -136,13 +139,14 @@ local function autofarmTest(world, farmethod)
             }
             
             game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Teleport"):InvokeServer(unpack(args))
-            wait(3)
+            wait(0)
             
             while getgenv().autofarmtest == true do
                 local spawns = workspace.SpawnZones[selectedfarmarea]:GetChildren()
                 for _, spawn in ipairs(spawns) do
                     if spawn:FindFirstChild("MainPart") then
                         farmethod(spawn.MainPart.CFrame.Position)
+                        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
                         wait(autofarmSpeed)
                         if not getgenv().autofarmtest then
                             break
@@ -171,6 +175,7 @@ local function autofarmGems(world)
                 for _, child in ipairs(workspace.SpawnZones[selectedfarmarea]:GetChildren()) do
                     if child.Name == "Gem" then
                         Tween(child.MainPart.CFrame.Position)
+                        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
                         wait(autofarmSpeed)
                         gemFound = true
                     end
@@ -189,7 +194,7 @@ local function autofarmGemsAll()
         end
         
         -- Create a table of the spawn zones in the order we want to search them
-        local spawnZones = {"Spawn", "Forest", "Frosty", "Mine", "Aqua", "Steampunk"}
+        local spawnZones = {"Spawn", "Forest", "Frosty", "Mine", "Aqua", "Steampunk","Sakura",}
         
         -- Loop through each spawn zone in the table
         for i = 1, #spawnZones do
@@ -547,6 +552,27 @@ local function autoClaimSpin()
 end)
 end
 
+local function openGui(chosengui)
+    spawn(function()
+        while wait() do
+            local players = game:GetService("Players")
+            local localPlayer = players.LocalPlayer
+            
+            -- Wait for the player's PlayerGui to load
+            repeat
+                wait(0)
+            until localPlayer.PlayerGui and localPlayer.PlayerGui:FindFirstChild("Rank Simulator X")
+            
+            -- Get the Achievements frame of the Rank Simulator X GUI
+            local achievementsFrame = localPlayer.PlayerGui["Rank Simulator X"].HUD.Frames[chosengui]
+            
+            -- Set the Visible property of the Achievements frame to true to make it active
+            achievementsFrame.Visible = true
+        break 
+    end  
+
+    end)
+end
 
 local Window = OrionLib:MakeWindow({Name = "[🚨UPDATE!🚨] Rank Simulator X  By Killa#2836", HidePremium = false, SaveConfig = true, ConfigFolder = "Killa Hub"})
 
@@ -673,7 +699,7 @@ local Section = Tab:AddSection({
 })
 Tab:AddDropdown({
 	Name = "Select Egg",
-	Default = "Basic",
+	Default = "Sakura",
 	Options = EggTable,
 	Callback = function(value)
     selectedegg1 = value
@@ -818,6 +844,29 @@ Tab:AddButton({
 })
 
 local Tab = Window:MakeTab({
+	Name = "Open GUI",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+Tab:AddDropdown({
+	Name = "Select GUI",
+	Default = "Achievements",
+	Options = GuiTable,
+	Callback = function(value)
+        selectedgui = value
+    print(value)
+	end    
+})
+
+Tab:AddButton({
+	Name = "Open GUI",
+	Callback = function()
+        openGui(selectedgui)
+  	end    
+})
+
+local Tab = Window:MakeTab({
 	Name = "Misc",
 	Icon = "rbxassetid://4483345998",
 	PremiumOnly = false
@@ -853,6 +902,17 @@ Tab:AddToggle({
     print("AutoSpin", bool)
     if bool then 
     autoClaimSpin()
+    end
+	end    
+})
+Tab:AddToggle({
+	Name = "AutoClaimAchievments",
+	Default = false,
+	Callback = function(bool)
+        getgenv().autoclaimach = bool
+    print("AutoClaimAchievments", bool)
+    if bool then 
+    autoClaimAch()
     end
 	end    
 })
